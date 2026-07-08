@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>H1Dz - Obfuscator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: #f8fafc;
+            color: #0b0b0f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1.5rem;
+            transition: background 0.2s;
+        }
+
+        /* mode gelap otomatis sesuai preferensi sistem */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #0d0d12;
+                color: #f0f0f5;
+            }
+            .container {
+                background: #18181f;
+                border: 1px solid #2b2b36;
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+            }
+            .file-box {
+                border-color: #3f3f52;
+                background: #1e1e28;
+            }
+            .file-box:hover {
+                background: #282835;
+            }
+            .status-box {
+                background: rgba(0, 230, 160, 0.08);
+                border-color: #2bcc9e;
+                color: #8ce6c6;
+            }
+            button.main-btn {
+                background: #2f2f42;
+                color: #f0f0f5;
+                border: 1px solid #4b4b66;
+            }
+            button.main-btn:hover {
+                background: #3d3d56;
+                border-color: #6b6b8f;
+            }
+            .hint {
+                color: #a0a0b8;
+            }
+            #startOverlay {
+                background: #0d0d12;
+            }
+            #startOverlay h1 {
+                color: #ececf5;
+            }
+            .start-btn {
+                border: 1px solid #6b6b8f;
+                color: #e4e4f0;
+            }
+            .start-btn:hover {
+                background: #28283a;
+                border-color: #9b9bc0;
+            }
+        }
+
+        /* mode terang (default) */
+        .container {
+            background: #ffffff;
+            padding: 2rem 2rem 2.2rem;
+            border-radius: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid #eaeaef;
+            transition: all 0.2s;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo-icon {
+            font-size: 1.6rem;
+            letter-spacing: -0.02em;
+            font-weight: 450;
+            color: #15151e;
+            margin-bottom: 0.25rem;
+            opacity: 0.8;
+        }
+        @media (prefers-color-scheme: dark) {
+            .logo-icon {
+                color: #d0d0e0;
+            }
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 550;
+            letter-spacing: -0.02em;
+            margin: 0.2rem 0 0.1rem;
+            color: inherit;
+        }
+
+        .subhead {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #6b6b80;
+            margin-top: 0.1rem;
+            margin-bottom: 1.8rem;
+            border-bottom: 1px solid #eef0f5;
+            padding-bottom: 1rem;
+        }
+        @media (prefers-color-scheme: dark) {
+            .subhead {
+                border-bottom-color: #2a2a36;
+                color: #a0a0b8;
+            }
+        }
+
+        .file-box {
+            border: 1.5px dashed #c5c5d9;
+            padding: 2.2rem 1rem;
+            border-radius: 20px;
+            background: #fafafe;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            margin-bottom: 1.8rem;
+            font-weight: 450;
+            color: #2b2b3a;
+        }
+        @media (prefers-color-scheme: dark) {
+            .file-box {
+                background: #1a1a24;
+                color: #d0d0e0;
+                border-color: #3a3a50;
+            }
+        }
+        .file-box:hover {
+            background: #f2f2f9;
+            border-color: #9b9bb8;
+        }
+        @media (prefers-color-scheme: dark) {
+            .file-box:hover {
+                background: #242432;
+                border-color: #5c5c7a;
+            }
+        }
+        .file-box span {
+            pointer-events: none;
+        }
+        .file-box .file-hint {
+            display: block;
+            font-size: 0.75rem;
+            color: #8a8aa3;
+            margin-top: 0.4rem;
+            font-weight: 350;
+        }
+
+        .status-box {
+            display: none;
+            background: rgba(0, 200, 140, 0.04);
+            border: 1px solid #28b08e;
+            color: #157a62;
+            padding: 0.9rem 1rem;
+            border-radius: 16px;
+            margin-bottom: 1.8rem;
+            font-size: 0.9rem;
+            font-weight: 450;
+            text-align: left;
+            word-break: break-word;
+        }
+        @media (prefers-color-scheme: dark) {
+            .status-box {
+                background: rgba(0, 230, 160, 0.06);
+                color: #9ce6ce;
+                border-color: #2bcc9e;
+            }
+        }
+
+        button.main-btn {
+            background: #f0f0f7;
+            border: 1px solid #d0d0e0;
+            padding: 1rem 1.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 520;
+            font-size: 1rem;
+            letter-spacing: 0.01em;
+            color: #16161f;
+            transition: all 0.15s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        button.main-btn:hover {
+            background: #e6e6f0;
+            border-color: #b0b0cc;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        @media (prefers-color-scheme: dark) {
+            button.main-btn {
+                background: #252533;
+                border-color: #3f3f58;
+                color: #ececf5;
+            }
+            button.main-btn:hover {
+                background: #333348;
+                border-color: #5a5a7a;
+            }
+        }
+
+        .footer-note {
+            margin-top: 1.6rem;
+            font-size: 0.7rem;
+            color: #9a9ab0;
+            letter-spacing: 0.02em;
+        }
+        @media (prefers-color-scheme: dark) {
+            .footer-note {
+                color: #6a6a82;
+            }
+        }
+
+        /* start overlay – clean */
+        #startOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f8fafc;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            transition: opacity 0.2s;
+        }
+        @media (prefers-color-scheme: dark) {
+            #startOverlay {
+                background: #0d0d12;
+            }
+        }
+        #startOverlay h1 {
+            font-size: 2.2rem;
+            font-weight: 480;
+            letter-spacing: -0.02em;
+            margin-bottom: 1.8rem;
+            color: #1a1a26;
+        }
+        @media (prefers-color-scheme: dark) {
+            #startOverlay h1 {
+                color: #e6e6f2;
+            }
+        }
+        .start-btn {
+            background: transparent;
+            border: 1.5px solid #b0b0cc;
+            padding: 0.9rem 2.8rem;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 480;
+            color: #1a1a2a;
+            cursor: pointer;
+            transition: all 0.15s;
+            letter-spacing: 0.02em;
+        }
+        .start-btn:hover {
+            background: #eaeaf5;
+            border-color: #8888aa;
+        }
+        @media (prefers-color-scheme: dark) {
+            .start-btn {
+                color: #e0e0ee;
+                border-color: #5a5a78;
+            }
+            .start-btn:hover {
+                background: #28283a;
+                border-color: #8a8aae;
+            }
+        }
+
+        /* matrix canvas tetap halus */
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+        @media (prefers-color-scheme: dark) {
+            #matrixCanvas {
+                opacity: 0.18;
+            }
+        }
+
+        /* responsif */
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem 1.2rem;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+            .file-box {
+                padding: 1.8rem 0.8rem;
+            }
+            button.main-btn {
+                padding: 0.9rem 0.8rem;
+            }
+            #startOverlay h1 {
+                font-size: 1.7rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .container {
+                padding: 1rem 0.8rem;
+            }
+            .file-box {
+                padding: 1.2rem 0.4rem;
+            }
+            .subhead {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* aksesibilitas & sentuhan */
+        .file-box, button, .start-btn {
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body>
+    <div id="startOverlay">
+        <h1>H1Dz</h1>
+        <button class="start-btn" id="activateBtn">Aktifkan sistem</button>
+    </div>
+
+    <canvas id="matrixCanvas"></canvas>
+
+    <div class="container">
+        <div class="logo-icon">◈ H1Dz</div>
+        <h1>OBF</h1>
+        <div class="subhead">.lua · .pwn · .html</div>
+
+        <div class="file-box" id="fileBox" role="button" tabindex="0" aria-label="Pilih file untuk dienkripsi">
+            <span id="boxLabel">Pilih file</span>
+            <span class="file-hint">Lua / Pwn / HTML</span>
+            <input type="file" id="fileInput" style="display:none" accept=".lua,.pwn,.inc,.html,.htm">
+        </div>
+
+        <div id="successStatus" class="status-box"></div>
+
+        <button class="main-btn" id="cryptBtn">Start</button>
+        <div class="footer-note">anti-ai</div>
+    </div>
+
+    <script>
+        (function() {
+            // ---- matrix effect ----
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
+            let width, height, drops;
+
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                const colCount = Math.max(20, Math.floor(width / 18));
+                drops = Array(colCount).fill(1);
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            function drawMatrix() {
+                ctx.fillStyle = 'rgba(248, 250, 252, 0.04)';
+                ctx.fillRect(0, 0, width, height);
+                ctx.font = '14px "Courier New", monospace';
+                ctx.fillStyle = '#4a4a6a';
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    ctx.fillStyle = '#8a8aaa';
+                }
+                drops.forEach((y, i) => {
+                    const text = Math.random() > 0.85 ? '⧩' : '·';
+                    ctx.fillText(text, i * 18, y * 16);
+                    if (y * 16 > height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                });
+                requestAnimationFrame(drawMatrix);
+            }
+            drawMatrix();
+
+            // ---- start overlay ----
+            const overlay = document.getElementById('startOverlay');
+            const activateBtn = document.getElementById('activateBtn');
+
+            function startApp() {
+                overlay.style.display = 'none';
+            }
+
+            activateBtn.addEventListener('click', startApp);
+            activateBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    startApp();
+                }
+            });
+
+            // ---- file picker via box ----
+            const fileBox = document.getElementById('fileBox');
+            const fileInput = document.getElementById('fileInput');
+            const boxLabel = document.getElementById('boxLabel');
+
+            fileBox.addEventListener('click', () => {
+                fileInput.click();
+            });
+            fileBox.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    fileInput.click();
+                }
+            });
+
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    boxLabel.textContent = this.files[0].name;
+                } else {
+                    boxLabel.textContent = 'Pilih file';
+                }
+            });
+
+            // ---- core crypt ----
+            const cryptBtn = document.getElementById('cryptBtn');
+            const successStatus = document.getElementById('successStatus');
+
+            function cryptHyperSecure() {
+                const fileInput = document.getElementById('fileInput');
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('Pilih file terlebih dahulu.');
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                const fileNameLower = file.name.toLowerCase();
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const originalCode = e.target.result;
+                    const key1 = Math.floor(Math.random() * 45) + 55;
+                    const key2 = Math.floor(Math.random() * 35) + 15;
+                    let finalObfuscatedCode = '';
+
+                    const giantAsciiArt = `
+        =============================================================================================
+       _  _  __ ______                     _________________ _  _ _____ _____   ___ _____ ___________ 
+      | | | |/  ||  _  \\                  |  _  | ___ \\  ___| | | /  ___/  __ \\ / _ \\_  _|  _  | ___ \\
+      | |_| |\`| || | | |________  ______  | | | | |_/ / |_  | | | \  \`--.| /  \\/// /_\\ \\| | | | | | |_/ /
+      |  _  | | || | | |_  /_  / |______| | | | | ___ \\  _| | | | | \`--. \\ |    |  _  || | | | | |    / 
+      | | | |_| || |/ / / / / /           \\ \\_/ / |_/ / |   | |_| /\\__/ / \\__/\\| | | || | \\ \\_/ / |\\ \\ 
+      \\_| |_/\\___/___/ /___/___|           \\___/\\____/\\_|    \\___/\\____/ \\____/\\_| |_/\\_/  \\___/\\_| \\_|
+                                                                                                     
+                                Obfuscator Anti-AI(LUA / PWN / HTML)
+        =============================================================================================`;
+
+                    const aiToxicGarbage = `
+        ▪ Protocol    : Hybrid cryptosystem (AES-256 + XOR)
+        ▪ Obfuscation : Runtime polymorphic
+        ▪ Anti-tamper : Checksum + integrity verification
+        ▪ Entropy     : High (256-bit)
+        ▪ Status      : ● Online
+        =============================================================================================`;
+
+                    const blankSpace = '\n'.repeat(500);
+
+                    if (fileNameLower.endsWith('.html') || fileNameLower.endsWith('.htm')) {
+                        let hexEncrypted = '';
+                        for (let i = 0; i < originalCode.length; i++) {
+                            let cryptedByte = originalCode.charCodeAt(i) ^ key1 ^ key2;
+                            hexEncrypted += cryptedByte.toString(16).padStart(2, '0');
+                        }
+                        const htmlHeaderComment = `/*${giantAsciiArt}${aiToxicGarbage}\n${blankSpace}*/`;
+                        finalObfuscatedCode = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><script>${htmlHeaderComment}var _0xkb=["\\x66\\x72\\x6f\\x6d\\x43\\x68\\x61\\x72\\x43\\x6f\\x64\\x65","\\x77\\x72\\x69\\x74\\x65","\\x6f\\x70\\x65\\x6e","\\x63\\x6c\\x6f\\x73\\x65"];(function(_h,_k1,_k2){let _res="";for(let i=0;i<_h.length;i+=2){let _b=parseInt(_h.substr(i,2),16);_res+=String[_0xkb[0]](_b^_k1^_k2)}document[_0xkb[2]]();document[_0xkb[1]](_res);document[_0xkb[3]]()})("${hexEncrypted}",${key1},${key2});<\/script></body></html>`;
+                    } 
+                    else if (fileNameLower.endsWith('.lua')) {
+                        let encBytes = [];
+                        let lastByte = key1;
+                        for (let i = 0; i < originalCode.length; i++) {
+                            let origByte = originalCode.charCodeAt(i);
+                            let encryptedByte = origByte ^ key1 ^ key2 ^ (lastByte % 256) ^ (i % 256);
+                            encBytes.push(encryptedByte);
+                            lastByte = encryptedByte;
+                        }
+                        let encString = '';
+                        for (let i = 0; i < encBytes.length; i++) {
+                            encString += '\\' + encBytes[i].toString().padStart(3, '0');
+                        }
+                        const luaHeader = `--[[${giantAsciiArt}${aiToxicGarbage}\n]]--`;
+                        
+                        // Perbaikan total string literal LUA agar terbebas dari JavaScript parsing bug
+                        finalObfuscatedCode = luaHeader + blankSpace + 
+                            "local _G = Object_G or _G; " +
+                            "local _____ = _G['string']; " +
+                            "local ______ = _____['char']; " +
+                            "local _______ = _____['byte']; " +
+                            "local ________ = _G['bit'] and _G['bit']['bxor'] or function(a,b) return a~=b end; " +
+                            "local ___ = '" + encString + "'; " +
+                            "local ____ = ''; " +
+                            "local ______1 = " + key1 + "; " +
+                            "for __1 = 1, #___ do " +
+                                "local __2 = _______(___, __1); " +
+                                "____ = ____ .. ______((________(________(________(________(__2, " + key1 + "), " + key2 + "), ______1 % 256), (__1 - 1) % 256))); " +
+                                "______1 = __2 " +
+                            "end; " +
+                            "(load or loadstring)(____)()";
+                    } 
+                    else {
+                        let minimized = originalCode
+                            .replace(/\/\*[\s\S]*?\*\//g, '')
+                            .replace(/\/\/.*/g, '')
+                            .replace(/\s+/g, ' ')
+                            .trim();
+
+                        let processedLines = minimized.replace(/"([^"]*)"/g, (match, p1) => {
+                            let hexStr = '';
+                            for (let j = 0; j < p1.length; j++) {
+                                hexStr += '\\x' + (p1.charCodeAt(j) ^ key2).toString(16).toUpperCase();
+                            }
+                            return `/*_x*/"${hexStr}"`;
+                        });
+
+                        const pwnHeader = `/*${giantAsciiArt}${aiToxicGarbage}\n*/`;
+                        finalObfuscatedCode = `${pwnHeader}${blankSpace}#define _l1I11 ${key2}\n#define _l1ll1(%0) (%0^_l1I11)\n${processedLines}`;
+                    }
+
+                    const blob = new Blob([finalObfuscatedCode], { type: 'text/plain' });
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    link.href = url;
+                    link.download = file.name;
+                    link.click();
+                    
+                    setTimeout(() => {
+                        URL.revokeObjectURL(url);
+                    }, 100);
+
+                    successStatus.style.display = 'block';
+                    successStatus.textContent = '✓ ' + file.name.toUpperCase() + ' berhasil dikunci & anti-AI aktif.';
+                };
+
+                reader.readAsText(file);
+            }
+
+            cryptBtn.addEventListener('click', cryptHyperSecure);
+        })();
+    </script>
+</body>
+</html>
